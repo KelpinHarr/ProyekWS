@@ -13,16 +13,13 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  Book.init({
-    id : {
-        type: DataTypes.STRING,
-        primaryKey: true,
-    },
+  User.init({
+    id: DataTypes.STRING,
     name: DataTypes.STRING,
     email: DataTypes.STRING,
-    username : DataTypes.STRING,
-    password : DataTypes.STRING,
-    birthdate : DataTypes.DATE,
+    username: DataTypes.STRING,
+    password: DataTypes.STRING,
+    birthdate: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'User',
