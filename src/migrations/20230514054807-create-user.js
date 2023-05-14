@@ -9,10 +9,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      id: {
-        type: Sequelize.STRING
-      },
-      name: {
+      display_name: {
         type: Sequelize.STRING
       },
       email: {
@@ -26,6 +23,15 @@ module.exports = {
       },
       birthdate: {
         type: Sequelize.DATE
+      },
+      saldo: {
+        type: Sequelize.INTEGER
+      },
+      api_hit: {
+        type: Sequelize.INTEGER
+      },
+      profile_picture: {
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,

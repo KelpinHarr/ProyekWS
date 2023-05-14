@@ -4,15 +4,26 @@ const multer = require("multer");
 const fs = require("fs");
 const upload = multer({
   dest : "./uploads",
+  limits : {
+    fileSize : 1000000 //1MB -> dlm bytes
+  },
+  fileFilter : function(req, file, cb){
+    if(file.mimetype != "image/png" || file.mimetype != "image/jpeg"){
+      return cb(new Error("Wrong file type"), null)
+    }
+    cb(null, true)
+  }
 });
 
+
 const checkUsername = async (username) => { 
-  cariUser =  await db.User.findAndCountAll({
-    where: {
-      username: username
+  const cariUser = await db.User.findAll({
+    where : {
+      username : username
     }
   })
-  if (cariUser.count > 0){
+  console.log(cariUser)
+  if(cariUser.length > 0){
     throw new Error("Username has already been taken")
   }
 }
@@ -22,6 +33,7 @@ module.exports = {
     const users = await db.User.findAll();
     return res.status(200).send(users);
   },
+  
   registerUser: async function (req, res) {
     const uploadFile = upload.single("profile_picture")
     uploadFile(req, res, async function (err) {
@@ -30,14 +42,15 @@ module.exports = {
       } else if (err) {
         return res.status(400).send({ msg: "File not supported" });
       } 
+      console.log(req.body.username)
       const {username, email, display_name, date_of_birth, password, confirm_password} = req.body;
 
       const schema = joi.object({
         username : joi.string().alphanum().required().external(checkUsername).messages({
           'string.empty' : 'Invalid data field username',
           'any.required' : 'Invalid data field username',
-          'any.alphanum' : 'Invalid data field username',
-          'any.external' : 'Username has already been taken'
+          'any.external' : 'Username has already been taken',
+          'string.alphanum' : 'Invalid data field'
         }),
         email : joi.string().email().required().messages({
           'string.empty' : 'Invalid data field email',
@@ -56,32 +69,32 @@ module.exports = {
         password :  joi.string().alphanum().required().messages({
           'string.empty' : 'Invalid data field password',
           'any.required' : 'Invalid data field password',
-          'any.alphanum' : 'Invalid data field password'
+          'string.alphanum' : 'Invalid data field'
         }),
         confirm_password :  joi.string().alphanum().required().messages({
           'string.empty' : 'Invalid data field confirm password',
           'any.required' : 'Invalid data field confirm password',
-          'any.alphanum' : 'Invalid data field confirm password'
+          'string.alphanum' : 'Invalid data field'
         }),
       })
 
       try {
         await schema.validateAsync(req.body)
       } catch (error) {
-        return res.status(400).send({
-            "message" : error.message
-        })
+          return res.status(400).send({
+              "message" : error.message
+          })
       }
-     
+      
       if(password != confirm_password){
         return res.status(404).send({"msg" : "Password and Confirm Password doesn't match"})
       }
 
-      fs.renameSync(
-        `./uploads/${req.file.filename}`,
-        `./assets/${username}.png`
-      );
-
+      // fs.renameSync(
+      //   `./uploads/${req.file.filename}`,
+      //   `./assets/${username}.png`
+      // );
+      
       const ins = db.User.create({
         display_name : display_name,
         email : email,
@@ -90,20 +103,16 @@ module.exports = {
         birthdate : date_of_birth,
         saldo : 0,
         api_hit : 0,
-        profile_picture : `/assets/${username}.png`
+        // profile_picture : `/assets/${username}.png`
       })
-
+      
       return res.status(201).send({
-        msg : "Registration successful",
+        msg : "Registration success",
         username : username,
-        email : email,
         display_name : display_name,
         saldo : 0,
-        profile_picture : `/assets/${username}.png`
+        // profile_picture : `/assets/${username}.png`
       })
-    })
-  },
-  login: async function (req, res) {
-
+    });
   },
 };
