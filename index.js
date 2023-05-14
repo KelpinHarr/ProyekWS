@@ -18,6 +18,8 @@ app.listen(port, function () {
 
 // npx sequelize-cli seed:generate --name User
 
-//npx sequelize-cli model:generate --name Group --attributes name:string,description:string,location:string,date:date,note:string,UserId:integer
+//npx sequelize-cli model:generate --name Group --attributes name:string,description:string
+
+//npx sequelize-cli model:generate --name UserGroup --attributes GroupId:integer,UserId:integer
 
 //npx sequelize-cli db:seed:all
