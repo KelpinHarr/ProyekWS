@@ -46,7 +46,6 @@ module.exports = {
     try{
       const user = jwt.verify(token, PRIVATE_KEY)
       req.user = user;
-      console.log("hai")
       next()
     }catch(e){
       console.log(e);
@@ -214,5 +213,37 @@ module.exports = {
       saldo_awal : saldoAwal,
       saldo_akhir : saldoAkhir
     })
-  },
+  },  
+  subscribe: async function (req, res) {
+    const user = req.user;
+
+    const cariUser = await db.User.findByPk(user.id);
+    if (!cariUser) {
+        return res.status(404).json({
+            message: "User not found"
+        })
+    }
+    if(cariUser.saldo < 50000) {
+      return res.status(400).json({
+          message: "Insufficient amount of balance"
+      })
+    }
+    saldo = cariUser.saldo - 50000;
+    apiHit = cariUser.api_hit + 10;
+
+    updateSaldo = await db.User.update({
+        saldo: saldo,
+        api_hit : apiHit
+    }, {
+        where: {
+            id: user.id
+        }
+    })
+
+    return res.status(200).json({
+      new_balance : saldo,
+      api_hit: apiHit,
+      message: "Subscription successfully done",
+    })
+  }
 };
