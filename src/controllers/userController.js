@@ -245,5 +245,39 @@ module.exports = {
       api_hit: apiHit,
       message: "Subscription successfully done",
     })
+  },
+  updateProfilePic : async function (req, res) {
+    const user = req.user
+    const uploadFile = upload.single("profile_picture")
+    uploadFile(req, res, async function (err) {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).send({ msg: "File too large" });
+      } else if (err) {
+        return res.status(400).send({ msg: "File not supported" });
+      } 
+      const userLogin = await db.User.findByPk(user.id)
+      if(!userLogin){
+        return res.status(400).send({
+          message : "User not found"
+        })
+      }
+      fs.renameSync(
+        `./uploads/${req.file.filename}`,
+        `./assets/${userLogin.username}.png`
+      );
+      await userLogin.update({
+        profile_picture : `/assets/${userLogin.username}.png`
+      }, {
+        where : {
+          id : user.id
+        }
+      })
+
+      return res.status(200).send({
+        message : "Update profile picture successful",
+        username : userLogin.username,
+        profile_picture : `/assets/${userLogin.username}.png`
+      })
+    })
   }
 };

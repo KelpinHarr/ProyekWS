@@ -15,4 +15,9 @@ app.listen(port, function () {
 });
 
 //npx sequelize-cli model:generate --name User --attributes display_name:string,email:string,username:string,password:string,birthdate:date,saldo:integer,api_hit:integer,profile_picture:string
-//npx sequelize-cli model:generate --name Meeting --attributes title:string,description:string,location:string,date:date,note:string,UserId:integer
+
+// npx sequelize-cli seed:generate --name User
+
+//npx sequelize-cli model:generate --name Group --attributes name:string,description:string,location:string,date:date,note:string,UserId:integer
+
+//npx sequelize-cli db:seed:all
