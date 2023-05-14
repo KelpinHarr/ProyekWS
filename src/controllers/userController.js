@@ -2,9 +2,13 @@ const db = require("../models/index");
 const joi = require("joi").extend(require('@joi/date'));
 const multer = require("multer");
 const fs = require("fs");
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const jwt = require("jsonwebtoken");
 const upload = multer({
   dest : "./uploads",
 });
+
+//==========================================
 
 const checkUsername = async (username) => { 
   cariUser =  await db.User.findAndCountAll({
@@ -17,7 +21,38 @@ const checkUsername = async (username) => {
   }
 }
 
+const cekUserAda = async (username) => {
+  cariUser = await db.User.findAndCountAll({
+    where: {
+      username: username
+    }
+  })
+  if (cariUser.count == 0){
+    throw new Error("Username not found")
+  }
+}
+
+//==========================================
+
 module.exports = {
+  cekToken : async function (req, res, next){
+    const token = req.headers["x-auth-token"];
+    if(!token){
+      return res.status(401).send({
+        message : "unauthorized!"
+      })
+    }
+  
+    try{
+      const user = jwt.verify(token, PRIVATE_KEY)
+      req.user = user;
+      console.log("hai")
+      next()
+    }catch(e){
+      console.log(e);
+      return res.status(400).send(e);
+    }
+  },
   getAll: async function (req, res) {
     const users = await db.User.findAll();
     return res.status(200).send(users);
@@ -104,6 +139,80 @@ module.exports = {
     })
   },
   login: async function (req, res) {
+    const {username, password} = req.body;
+    const schema = joi.object({
+      username : joi.string().alphanum().required().external(cekUserAda).messages({
+        'string.empty' : 'Invalid data field username',
+        'any.required' : 'Invalid data field username',
+        'any.alphanum' : 'Invalid data field username',
+        'any.external' : 'Username not found'
+      }),
+      password :  joi.string().alphanum().required().messages({
+        'string.empty' : 'Invalid data field password',
+        'any.required' : 'Invalid data field password',
+        'any.alphanum' : 'Invalid data field password'
+      }),
+    })
 
+    try {
+      await schema.validateAsync(req.body)
+    } catch (error) {
+      return res.status(400).send({
+          "message" : error.message
+      })
+    }
+
+    const userLogin = await db.User.findOne({
+      where : {
+        username : username,
+      }
+    })
+
+    if(userLogin.password != password){
+      return res.status(404).send({"msg" : "Password is incorrect"})
+    }
+
+    const token = jwt.sign({
+      id: userLogin.id,
+      username: userLogin.username,
+    }, PRIVATE_KEY);
+
+    return res.status(200).json({
+        message: "Login success",
+        username: userLogin.username,
+        token: token
+    })
+
+  },
+  topupSaldo : async function (req, res) {
+    user = req.user
+    const {saldo} = req.body;
+    if(!saldo){
+      return res.status(400).send({
+        message : "Invalid data field topup"
+      })
+    }
+    if(saldo < 10000){
+      return res.status(400).send({
+        message : "Minimum topup is 10000"
+      })
+    }
+    userLogin = await db.User.findByPk(user.id)
+    if(!userLogin){
+      return res.status(400).send({
+        message : "User not found"
+      })
+    }
+    saldoAwal = parseInt(userLogin.saldo)
+    saldoAkhir = saldoAwal + parseInt(saldo)
+    await userLogin.update({
+      saldo : saldoAkhir
+    })
+    return res.status(200).send({
+      message : "Topup successful",
+      username : userLogin.username,
+      saldo_awal : saldoAwal,
+      saldo_akhir : saldoAkhir
+    })
   },
 };

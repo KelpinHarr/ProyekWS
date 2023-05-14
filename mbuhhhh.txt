@@ -111,8 +111,41 @@ module.exports = {
         username : username,
         display_name : display_name,
         saldo : 0,
-        // profile_picture : `/assets/${username}.png`
+        profile_picture : `/assets/${username}.png`
       })
     });
   },
 };
+
+
+
+require("dotenv").config();
+module.exports = {
+    "username": process.env.DB_USERNAME,
+    "password": process.env.DB_PASSWORD,
+    "database": process.env.DB_DATABASE,
+    "host": process.env.DB_HOST,
+    "dialect": "mysql",
+    "logging" : false
+}
+
+
+
+
+// const {topup} = req.body;
+    // const schema = joi.object({
+    //   topup : joi.number().min(1000).required().messages({
+    //     'number.base' : 'Invalid data field topup',
+    //     'number.empty' : 'Invalid data field topup',
+    //     'any.required' : 'Invalid data field topup',
+    //     'number.min' : 'Minimum topup is 1000'
+    //   }),
+    // })
+
+    // try {
+    //   await schema.validateAsync(req.body)
+    // } catch (error) {
+    //   return res.status(400).send({
+    //       "message" : error.message
+    //   })
+    // }
