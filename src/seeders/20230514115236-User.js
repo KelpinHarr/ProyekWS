@@ -12,6 +12,19 @@ module.exports = {
      *   isBetaMember: false
      * }], {});
     */
+
+    await queryInterface.bulkInsert('Users', [{
+      display_name: 'Andre Sebastian',
+      email: 'andrebastian69@gmail.com',
+      username: 'andresebastian_real',
+      password: 'namagwandre',
+      birthdate: '2002-02-17',
+      saldo: 0,
+      api_hit: 0,
+      profile_picture: '/assets/andresebastian_real.png',
+      createdAt: '2023-05-20 05:53:30',
+      updatedAt: '2023-05-20 05:53:30'
+    }])
   },
 
   async down (queryInterface, Sequelize) {
