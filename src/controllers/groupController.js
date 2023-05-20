@@ -130,5 +130,36 @@ module.exports = {
       description : cariGroup.description,
       members : cariJumlahMember.count
     })
+  },
+
+//add schedule
+  addSchedule : async function(req, res){
+    const { username, date, time } = req.body;
+    
+    if (!username || !date || !time){
+      const result = {
+        "message" : "Field can'\t be empty!"
+      }
+      res.status(400).json(result);
+    }
+    else {
+      const cariUser = await db.User.findAll({
+        where: {
+          username: username
+        }
+      })
+      if (cariUser.length == 0){
+        const result = {
+          "message" : "User not found"
+        }
+        res.status(404).json(result);
+      }
+      else {
+        const result = {
+          "message" : "Schedule Added"
+        }
+        res.status(201).json(result);
+      }
+    }
   }
 };
