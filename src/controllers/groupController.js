@@ -48,7 +48,8 @@ module.exports = {
 
     await db.UserGroup.create({
       GroupId : group.id,
-      UserId : UserId
+      UserId : UserId,
+      status: 'joined'
     })
 
     return res.status(200).send({
@@ -82,7 +83,8 @@ module.exports = {
     cariGroupMember = await db.UserGroup.findOne({
       where : {
         GroupId : id,
-        UserId : UserId
+        UserId : UserId,
+        status : 'joined'
       }
     })
 
@@ -95,7 +97,7 @@ module.exports = {
     await db.UserGroup.create({
       GroupId : id,
       UserId : UserId,
-      status : "done"
+      status : 'joined'
     })
 
     return res.status(200).send({
