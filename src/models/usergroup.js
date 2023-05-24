@@ -14,9 +14,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   UserGroup.init({
-    status: DataTypes.STRING,
     GroupId: DataTypes.INTEGER,
-    UserId: DataTypes.INTEGER
+    UserId: DataTypes.INTEGER,
+    status: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'UserGroup',
