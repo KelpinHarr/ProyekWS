@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('UserGroups', {
+    await queryInterface.createTable('GroupMeetings', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -12,8 +12,11 @@ module.exports = {
       GroupId: {
         type: Sequelize.INTEGER
       },
-      UserId: {
+      MeetingId: {
         type: Sequelize.INTEGER
+      },
+      notes: {
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
@@ -26,6 +29,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('UserGroups');
+    await queryInterface.dropTable('GroupMeetings');
   }
 };

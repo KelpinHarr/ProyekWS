@@ -20,6 +20,12 @@ app.listen(port, function () {
 
 //npx sequelize-cli model:generate --name Group --attributes name:string,description:string
 
-//npx sequelize-cli model:generate --name UserGroup --attributes GroupId:integer,UserId:integer
+//npx sequelize-cli model:generate --name UserGroup --attributes GroupId:integer,UserId:integer,status:string
+
+//npx sequelize-cli model:generate --name Schedule --attributes UserId1:integer,UserId2:integer,status:string,tanggal:date,waktu:time
+
+//npx sequelize-cli model:generate --name Meeting --attributes GroupId:integer,UserId:integer,status:string,tanggal:date,waktu:time
+
+//npx sequelize-cli model:generate --name GroupMeeting --attributes GroupId:integer,MeetingId:integer,notes:string
 
 //npx sequelize-cli db:seed:all

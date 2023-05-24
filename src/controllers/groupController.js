@@ -94,7 +94,8 @@ module.exports = {
 
     await db.UserGroup.create({
       GroupId : id,
-      UserId : UserId
+      UserId : UserId,
+      status : "done"
     })
 
     return res.status(200).send({
