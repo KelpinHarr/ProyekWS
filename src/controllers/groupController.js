@@ -8,12 +8,6 @@ const upload = multer({
   dest : "./uploads",
 });
 
-//==========================================
-
-
-
-//==========================================
-
 module.exports = {
   cekToken : async function (req, res, next){
     const token = req.headers["x-auth-token"];
@@ -41,12 +35,32 @@ module.exports = {
       })
     }
     const UserId = req.user.id;
+    groupCode = Math.random().toString(36).split(".")[1].toString().substring(0,6);
+    console.log(groupCode)
+    cariGroup = await db.Group.findOne({
+      where : {
+        groupCode : groupCode
+      }
+    })
+    
+    for (let i = 0; i < 10; i++) {
+      if(cariGroup){
+        code = Math.random().toString(36).split(".")[1].toString().substring(0,6);
+        cariGroup = await db.Group.findOne({
+          where : {
+            groupCode : groupCode
+          }
+        })
+      }
+    }
+
     const group = await db.Group.create({
       name,
       description,
+      groupCode
     });
 
-    await db.UserGroup.create({
+    const tambahUser = await db.UserGroup.create({
       GroupId : group.id,
       UserId : UserId,
       status: 'joined'
@@ -55,22 +69,23 @@ module.exports = {
     return res.status(200).send({
       id : group.id,
       name : group.name,
+      code : group.groupCode,
       description : group.description,
       members : 1
     });
   },
   joinGroup : async function (req, res) {
-    const { id } = req.params;
+    const { code } = req.params;
     const UserId = req.user.id;
-    if(!id){
+    if(!code){
       return res.status(400).send({
-        message : "id group cannot be empty"
+        message : "group code cannot be empty"
       })
     }
 
     cariGroup = await db.Group.findOne({
       where : {
-        id : id
+        groupCode : code
       }
     })
 
@@ -82,7 +97,7 @@ module.exports = {
 
     cariGroupMember = await db.UserGroup.findOne({
       where : {
-        GroupId : id,
+        GroupId : cariGroup.id,
         UserId : UserId,
         status : 'joined'
       }
@@ -95,14 +110,22 @@ module.exports = {
     }
 
     await db.UserGroup.create({
-      GroupId : id,
+      GroupId : cariGroup.id,
       UserId : UserId,
       status : 'joined'
     })
 
+    jumlahMember = await db.UserGroup.findAndCountAll({
+      where : {
+        GroupId : cariGroup.id,
+        status : 'joined'
+      }
+    })
+
     return res.status(200).send({
       message : "success join group",
-      group_name : cariGroup.name
+      group_name : cariGroup.name,
+      members : jumlahMember.count
     })  
   },
   getGroupById : async function (req, res) {
@@ -130,39 +153,9 @@ module.exports = {
     return res.status(200).send({
       id : cariGroup.id,
       name : cariGroup.name,
+      code : cariGroup.groupCode,
       description : cariGroup.description,
       members : cariJumlahMember.count
     })
-  },
-
-//add schedule
-  addSchedule : async function(req, res){
-    const { username, date, time } = req.body;
-    
-    if (!username || !date || !time){
-      const result = {
-        "message" : "Field can'\t be empty!"
-      }
-      res.status(400).json(result);
-    }
-    else {
-      const cariUser = await db.User.findAll({
-        where: {
-          username: username
-        }
-      })
-      if (cariUser.length == 0){
-        const result = {
-          "message" : "User not found"
-        }
-        res.status(404).json(result);
-      }
-      else {
-        const result = {
-          "message" : "Schedule Added"
-        }
-        res.status(201).json(result);
-      }
-    }
   }
 };

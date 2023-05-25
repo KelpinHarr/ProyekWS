@@ -67,10 +67,9 @@ module.exports = {
       const {username, email, display_name, date_of_birth, password, confirm_password} = req.body;
 
       const schema = joi.object({
-        username : joi.string().alphanum().required().external(checkUsername).messages({
+        username : joi.string().required().external(checkUsername).messages({
           'string.empty' : 'Invalid data field username',
           'any.required' : 'Invalid data field username',
-          'any.alphanum' : 'Invalid data field username',
           'any.external' : 'Username has already been taken'
         }),
         email : joi.string().email().required().messages({
@@ -87,15 +86,13 @@ module.exports = {
           'any.required' : 'Invalid data field date',
           'date.format' : 'Invalid date format',
         }),
-        password :  joi.string().alphanum().required().messages({
+        password :  joi.string().required().messages({
           'string.empty' : 'Invalid data field password',
           'any.required' : 'Invalid data field password',
-          'any.alphanum' : 'Invalid data field password'
         }),
-        confirm_password :  joi.string().alphanum().required().messages({
+        confirm_password :  joi.string().required().messages({
           'string.empty' : 'Invalid data field confirm password',
           'any.required' : 'Invalid data field confirm password',
-          'any.alphanum' : 'Invalid data field confirm password'
         }),
       })
 
@@ -140,16 +137,14 @@ module.exports = {
   login: async function (req, res) {
     const {username, password} = req.body;
     const schema = joi.object({
-      username : joi.string().alphanum().required().external(cekUserAda).messages({
+      username : joi.string().required().external(cekUserAda).messages({
         'string.empty' : 'Invalid data field username',
         'any.required' : 'Invalid data field username',
-        'any.alphanum' : 'Invalid data field username',
         'any.external' : 'Username not found'
       }),
-      password :  joi.string().alphanum().required().messages({
+      password :  joi.string().required().messages({
         'string.empty' : 'Invalid data field password',
         'any.required' : 'Invalid data field password',
-        'any.alphanum' : 'Invalid data field password'
       }),
     })
 
@@ -174,7 +169,9 @@ module.exports = {
     const token = jwt.sign({
       id: userLogin.id,
       username: userLogin.username,
-    }, PRIVATE_KEY);
+    }, PRIVATE_KEY, {
+      expiresIn: 86400 // 24 hours
+    });
 
     return res.status(200).json({
         message: "Login success",
