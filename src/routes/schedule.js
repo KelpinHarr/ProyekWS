@@ -7,5 +7,6 @@ router.put("/cancel", scheduleController.cekToken, scheduleController.cancelSche
 router.get("/list", scheduleController.cekToken, scheduleController.listSchedule);
 router.get("/pending", scheduleController.cekToken, scheduleController.showPendingSchedule);
 router.put("/approve", scheduleController.cekToken, scheduleController.approveSchedule);
+router.get("/details/:id_schedule", scheduleController.cekToken, scheduleController.detailSchedule);
 
 module.exports = router;

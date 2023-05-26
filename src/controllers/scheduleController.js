@@ -107,7 +107,7 @@ module.exports = {
           })
           const result = {
             "message" : "Schedule Added",
-            "scheduleId" : schedule.id,
+            "schedule_id" : schedule.id,
             "UserId1" : user1.username,
             "UserId2" : user2.username,
             "date" : schedule.tanggal,
@@ -282,6 +282,54 @@ module.exports = {
         }
         res.status(400).json(result);
       }
+    }
+  },
+  detailSchedule : async function(req, res){
+    const idSchedule = req.params.id_schedule;
+    const cariSchedule = await db.Schedule.findByPk(idSchedule)
+
+    userLogin = req.user.id;
+    user1 = await db.User.findByPk(userLogin);
+    user1 = user1.dataValues;
+
+    if (!cariSchedule){
+      const result = {
+        "message" : "Schedule not found"
+      }
+      res.status(404).json(result)
+    }
+    else {
+      if (user1.id==cariSchedule.UserId1||user1.id==cariSchedule.UserId2){
+        const cariUser1 = await db.User.findAll({
+          where: {
+           id: cariSchedule.UserId1 
+          }
+        })
+  
+        const cariUser2 = await db.User.findAll({
+          where: {
+            id: cariSchedule.UserId2
+          }
+        })
+
+        const result = {
+          "id_schedule" : idSchedule,
+          "tanggal" : tanggalToString(cariSchedule.tanggal),
+          "waktu" : cariSchedule.waktu,
+          "User 1" : cariUser1[0].username,
+          "User 2" : cariUser2[0].username
+        }
+        res.status(200).json(result);
+      }
+      else {
+        const result = {
+          "message" : "Invalid User"
+        }
+        res.status(400).json(result);
+      }
+
+
+
     }
   }
 };
