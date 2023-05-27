@@ -7,6 +7,8 @@ const jwt = require("jsonwebtoken");
 const upload = multer({
   dest : "./uploads",
 });
+const Sequelize = require('sequelize');
+const { Op } = Sequelize;
 
 //====================================
 function keDate(dateString) {
@@ -19,6 +21,7 @@ function keDate(dateString) {
   return dateTime;
 }
 const moment = require('moment');
+const { group } = require("console");
 
 function keTime(timeString) {
   const format = 'HH:mm'; // Format waktu yang diharapkan
@@ -86,13 +89,40 @@ module.exports = {
 
         const cariSchedule = await db.Schedule.findAll({
           where: {
-            UserId1: user1.id,
-            UserId2: user2.id,
+            UserId1: {
+              [Op.or]: [user1.id, user2.id]
+            },
+            UserId2: {
+              [Op.or]: [user1.id, user2.id]
+            },
             tanggal: keDate(date),
             waktu: keTime(time)
           }
         })
-        if (cariSchedule.length > 0){
+        console.log("hehe")
+        const cariGroup = await db.UserGroup.findAll({
+          where: {
+            // [Op.or]: [{UserId: user1.id}, {UserId: user2.id}]
+            UserId: {
+              [Op.or]: [user1.id, user2.id]
+            }
+          }
+        })
+        
+        var adaMeeting=false;
+        for (let i = 0; i < cariGroup.length; i++) {
+          const cariMeeting = await db.Meeting.findAll({
+            where: {
+              GroupId: cariGroup[i].GroupId,
+              tanggal: keDate(date),
+              waktu: keTime(time)
+            }
+          })
+          if(cariMeeting.length>0){
+            adaMeeting=true;
+          }
+        }
+        if (cariSchedule.length > 0||adaMeeting==true){
           res.status(404).json({
             "message" : "Schedule already exist"
           })
@@ -331,5 +361,5 @@ module.exports = {
 
 
     }
-  }
+  },
 };
