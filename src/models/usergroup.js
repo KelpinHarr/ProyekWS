@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      UserGroup.belongsTo(models.Group)
+      UserGroup.belongsTo(models.User)
     }
   }
   UserGroup.init({

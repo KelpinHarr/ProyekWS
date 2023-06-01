@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Schedule.belongsTo(models.User, {foreignKey: 'UserId1'})
+      Schedule.belongsTo(models.User, {foreignKey: 'UserId2'})
     }
   }
   Schedule.init({
@@ -18,7 +20,8 @@ module.exports = (sequelize, DataTypes) => {
     UserId2: DataTypes.INTEGER,
     status: DataTypes.STRING,
     tanggal: DataTypes.DATE,
-    waktu: DataTypes.TIME
+    waktumulai: DataTypes.TIME,
+    waktuselesai: DataTypes.TIME
   }, {
     sequelize,
     modelName: 'Schedule',

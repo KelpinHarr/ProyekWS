@@ -21,7 +21,10 @@ module.exports = {
       tanggal: {
         type: Sequelize.DATE
       },
-      waktu: {
+      waktumulai: {
+        type: Sequelize.TIME
+      },
+      waktuselesai: {
         type: Sequelize.TIME
       },
       createdAt: {

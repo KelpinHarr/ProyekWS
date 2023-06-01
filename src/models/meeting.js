@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Meeting.belongsTo(models.Group)
+      Meeting.belongsTo(models.User)
     }
   }
   Meeting.init({
@@ -18,7 +20,8 @@ module.exports = (sequelize, DataTypes) => {
     UserId: DataTypes.INTEGER,
     status: DataTypes.STRING,
     tanggal: DataTypes.DATE,
-    waktu: DataTypes.TIME
+    waktumulai: DataTypes.TIME,
+    waktuselesai: DataTypes.TIME
   }, {
     sequelize,
     modelName: 'Meeting',

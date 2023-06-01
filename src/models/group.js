@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Group.belongsToMany(models.User, {through: models.UserGroup})
+      Group.hasMany(models.Meeting)
     }
   }
   Group.init({
