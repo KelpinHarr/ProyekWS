@@ -3,6 +3,7 @@ const joi = require("joi").extend(require('@joi/date'));
 const multer = require("multer");
 const fs = require("fs");
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const mailjet = require('node-mailjet').connect("34e863ef1280dba6ab3dba7e0f11aded", "198e9705382ac5c517ba5a29297a4bb8")
 const jwt = require("jsonwebtoken");
 const upload = multer({
   dest : "./uploads",
@@ -32,6 +33,43 @@ function keTime(timeString) {
 
 function tanggalToString(tanggal) {
   return (tanggal.toISOString().slice(0, 10).replace('T', ' '))
+}
+
+function sendEmail() {
+    // Variabel yang menampung desain email yang akan dikirim
+    const contentEmail = `
+    <h1>Hai ${req.body.name},</h1>
+    <p>Selamat, kamu telah berhasil mengirim email menggunakan Mailjet!</p>`
+
+  const request = mailjet
+    .post("send", { 'version': 'v3.1' })
+    .request({
+        "Messages": [{
+            "From": {
+                "Email": "calvinharsono07@gmail.com",
+                "Name": "Rajinkoding"
+            },
+            "To": [{
+                "Email": pemail, 
+                "Name": req.body.name    
+            }],
+            "Subject": "Selamat, email kamu berhasil terkirim",
+            "HTMLPart": contentEmail
+        }]
+    })
+  request
+    .then((result) => {
+        res.send({
+            status: result.response.status,
+            result: result.body
+        });
+    })
+    .catch((err) => {
+        res.send({
+            status: err.statusCode,
+            massage: err.message
+        });
+    })
 }
 
 //====================================
