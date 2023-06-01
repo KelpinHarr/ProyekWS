@@ -3,7 +3,7 @@ const joi = require("joi").extend(require('@joi/date'));
 const multer = require("multer");
 const fs = require("fs");
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const mailjet = require('node-mailjet').connect("34e863ef1280dba6ab3dba7e0f11aded", "198e9705382ac5c517ba5a29297a4bb8")
+// const mailjet = require('node-mailjet').connect("34e863ef1280dba6ab3dba7e0f11aded", "198e9705382ac5c517ba5a29297a4bb8")
 const jwt = require("jsonwebtoken");
 const upload = multer({
   dest : "./uploads",
@@ -17,7 +17,7 @@ function keDate(dateString) {
   const [day, month, year] = dateString.split('/');
 
   // Membuat objek Date dengan jam 00:00
-  const dateTime = new Date(`${year}-${month}-${day}T00:00:00`);
+  const dateTime = new Date(`${year}-${month}-${day}T00:00:01`);
 
   return dateTime;
 }
@@ -92,17 +92,16 @@ module.exports = {
     }
   },
   addSchedule : async function(req, res){
-    const { username, date, time } = req.body;
+    const { username, date, start, end } = req.body;
     userLogin = req.user.id;
     user1 = await db.User.findByPk(userLogin);
     user1 = user1.dataValues;
-    console.log(keDate(date))
            
-    if (!username || !date || !time){
+    if (!username || !date || !start || !end){
       const result = {
         "message" : "Field can't be empty!"
       }
-      res.status(400).json(result);
+      return res.status(400).json(result);
     }
     else {
       const cariUser = await db.User.findAll({
@@ -114,15 +113,22 @@ module.exports = {
         const result = {
           "message" : "User not found"
         }
-        res.status(404).json(result);
+        return res.status(404).json(result);
       }
       else {
         user2 = cariUser[0].dataValues;
 
         if(user1.id == user2.id){
-          res.status(404).json({
+          return res.status(404).json({
             "message" : "You can't add yourself"
           })
+        }
+
+        if (start >= end){
+          const result = {
+            "message" : "Start time must be less than end time"
+          }
+          return res.status(400).json(result);
         }
 
         const cariSchedule = await db.Schedule.findAll({
@@ -134,18 +140,37 @@ module.exports = {
               [Op.or]: [user1.id, user2.id]
             },
             tanggal: keDate(date),
-            waktu: keTime(time)
+            waktumulai: keTime(start),
+            waktuselesai: keTime(end)
           }
         })
-        console.log("hehe")
+
         const cariGroup = await db.UserGroup.findAll({
           where: {
-            // [Op.or]: [{UserId: user1.id}, {UserId: user2.id}]
             UserId: {
               [Op.or]: [user1.id, user2.id]
             }
           }
         })
+
+        tambahSchedule = true
+        const cariSchedule2 = await db.Schedule.findAll({
+          where: {
+            tanggal: keDate(date),
+          }
+        })
+
+        for (let i = 0; i < cariSchedule2.length; i++) {
+          if (tambahSchedule == true) {
+            if (cariSchedule2[i].UserId1 == user1.id || cariSchedule2[i].UserId2 == user1.id){
+              tambahSchedule=false;
+            } 
+
+            if (cariSchedule2[i].waktumulai.toString().substring(0,5) == start){
+              tambahSchedule=false;
+            }
+          }
+        }
         
         var adaMeeting=false;
         for (let i = 0; i < cariGroup.length; i++) {
@@ -153,15 +178,19 @@ module.exports = {
             where: {
               GroupId: cariGroup[i].GroupId,
               tanggal: keDate(date),
-              waktu: keTime(time)
+              waktumulai: keTime(start),
+              waktuselesai: keTime(end)
             }
           })
           if(cariMeeting.length>0){
             adaMeeting=true;
           }
         }
-        if (cariSchedule.length > 0||adaMeeting==true){
-          res.status(404).json({
+        if (cariSchedule.length > 0 || adaMeeting==true  || tambahSchedule==false){
+          if (tambahSchedule==false) { 
+            return res.status(404).json({"message" : "You have a meeting at that time"}) 
+          }
+          return res.status(404).json({
             "message" : "Schedule already exist"
           })
         }
@@ -171,17 +200,18 @@ module.exports = {
             UserId2: user2.id,
             status : "pending",
             tanggal: keDate(date),
-            waktu: keTime(time)
+            waktumulai: keTime(start),
+            waktuselesai: keTime(end)
           })
           const result = {
             "message" : "Schedule Added",
             "schedule_id" : schedule.id,
             "UserId1" : user1.username,
             "UserId2" : user2.username,
-            "date" : schedule.tanggal,
-            "time" : schedule.waktu
+            "date" : tanggalToString(schedule.tanggal),
+            "waktu" : schedule.waktumulai + " - " + schedule.waktuselesai,
           }
-          res.status(201).json(result);
+          return res.status(201).json(result);
         }
       }
     }
@@ -191,13 +221,12 @@ module.exports = {
     userLogin = req.user.id;
     user1 = await db.User.findByPk(userLogin);
     user1 = user1.dataValues;
-    // console.log(keDate(date))
            
     if (!id_schedule){
       const result = {
         "message" : "Field can't be empty!"
       }
-      res.status(400).json(result);
+      return res.status(400).json(result);
     }
     else {
       const cariSchedule = await db.Schedule.findAll({
@@ -209,7 +238,7 @@ module.exports = {
         const result = {
           "message" : "Schedule not found"
         }
-        res.status(404).json(result);
+        return res.status(404).json(result);
       }
       else {
         if(cariSchedule[0].status=='pending'||cariSchedule[0].status=='approved'){
@@ -224,31 +253,27 @@ module.exports = {
             })
             const result = {
               "message" : "Schedule Cancelled",
-              // date : date,
-              // time : time,
               "scheduleId" : cariSchedule[0].id,
               "UserId1" : user1.username,
               "UserId2" : cariSchedule[0].UserId2,
               "date" : cariSchedule[0].tanggal,
-              "time" : cariSchedule[0].waktu
+              "waktu_mulai" : cariSchedule[0].waktumulai,
+              "waktu_selesai" : cariSchedule[0].waktuselesai,
             }
-            res.status(201).json(result);
+            return res.status(201).json(result);
           }
           else{
-            // console.log(user1.id)
-            // console.log(cariSchedule[0].UserId1)
-            // console.log(cariSchedule[0].UserId2)
             const result = {
               "message" : "Unauthorized"
             }
-            res.status(400).json(result);
+            return res.status(400).json(result);
           }
         }
         else{
           const result = {
             "message" : "invalid schedule status"
           }
-          res.status(400).json(result);
+          return res.status(400).json(result);
         }
       }
     }
@@ -266,17 +291,28 @@ module.exports = {
       const result = {
         "message" : "There are no pending schedule"
       }
-      res.status(400).json(result);
+      return res.status(400).json(result);
     }
     else {
-
       let temp = [];
       for (let i = 0; i < cariSchedule.length; i++) {
-        if (user1.id == cariSchedule[i].UserId1 || user1.id == cariSchedule[i].UserId2){
+        if (user1.id == cariSchedule[i].UserId1){
+          user2 = await db.User.findByPk(cariSchedule[i].UserId2);
           temp.push({
             id: cariSchedule[i].id,
+            User1: user1.display_name,
+            User2: user2.display_name,
             tanggal: tanggalToString(cariSchedule[i].tanggal),
-            waktu: cariSchedule[i].waktu,
+            waktu: cariSchedule[i].waktumulai + " - " + cariSchedule[i].waktuselesai,
+          })
+        } else if (user1.id == cariSchedule[i].UserId2){
+          user2 = await db.User.findByPk(cariSchedule[i].UserId1);
+          temp.push({
+            id: cariSchedule[i].id,
+            User1: user2.display_name,
+            User2 :user1.display_name,
+            tanggal: tanggalToString(cariSchedule[i].tanggal),
+            waktu: cariSchedule[i].waktumulai + " - " + cariSchedule[i].waktuselesai,
           })
         }
       }
@@ -285,7 +321,7 @@ module.exports = {
         "Schedule" : temp
       }
       
-      res.status(200).json(result);
+      return res.status(200).json(result);
     }
   },
   listSchedule : async function(req, res){
@@ -301,7 +337,7 @@ module.exports = {
           id: cariSchedule[i].id,
           status: cariSchedule[i].status,
           tanggal: tanggalToString(cariSchedule[i].tanggal),
-          waktu: cariSchedule[i].waktu,
+          waktu: cariSchedule[i].waktumulai + " - " + cariSchedule[i].waktuselesai,
         })
       }
     }
@@ -309,7 +345,7 @@ module.exports = {
     const result = {
       "List Schedule" : temp
     }
-    res.status(200).json(result);
+    return res.status(200).json(result);
   },
   approveSchedule : async function(req, res){
     const { id_schedule, status } = req.body;
@@ -327,7 +363,7 @@ module.exports = {
       const result = {
         "message" : "Schedule not found"
       }
-      res.status(404).json(result);
+      return res.status(404).json(result);
     }
     else {
       if(user1.id == cariSchedule[0].UserId2){
@@ -342,13 +378,13 @@ module.exports = {
         const result = {
           "message" : "Schedule Approved",
         }
-        res.status(200).json(result);
+        return res.status(200).json(result);
       }
       else {
         const result = {
           "message" : "Invalid User"
         }
-        res.status(400).json(result);
+        return res.status(400).json(result);
       }
     }
   },
@@ -364,7 +400,7 @@ module.exports = {
       const result = {
         "message" : "Schedule not found"
       }
-      res.status(404).json(result)
+      return res.status(404).json(result)
     }
     else {
       if (user1.id==cariSchedule.UserId1||user1.id==cariSchedule.UserId2){
@@ -383,21 +419,18 @@ module.exports = {
         const result = {
           "id_schedule" : idSchedule,
           "tanggal" : tanggalToString(cariSchedule.tanggal),
-          "waktu" : cariSchedule.waktu,
+          "waktu" : cariSchedule.waktumulai + " - " + cariSchedule.waktuselesai,
           "User 1" : cariUser1[0].username,
           "User 2" : cariUser2[0].username
         }
-        res.status(200).json(result);
+        return res.status(200).json(result);
       }
       else {
         const result = {
           "message" : "Invalid User"
         }
-        res.status(400).json(result);
+        return res.status(400).json(result);
       }
-
-
-
     }
   },
 };
