@@ -3,7 +3,7 @@ const joi = require("joi").extend(require('@joi/date'));
 const multer = require("multer");
 const fs = require("fs");
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
-// const mailjet = require('node-mailjet').connect("34e863ef1280dba6ab3dba7e0f11aded", "198e9705382ac5c517ba5a29297a4bb8")
+const mailjet = require('node-mailjet').connect("34e863ef1280dba6ab3dba7e0f11aded", "198e9705382ac5c517ba5a29297a4bb8")
 const jwt = require("jsonwebtoken");
 const upload = multer({
   dest : "./uploads",
@@ -35,10 +35,10 @@ function tanggalToString(tanggal) {
   return (tanggal.toISOString().slice(0, 10).replace('T', ' '))
 }
 
-function sendEmail() {
+function sendEmail(pemail, pusername) {
     // Variabel yang menampung desain email yang akan dikirim
     const contentEmail = `
-    <h1>Hai ${req.body.name},</h1>
+    <h1>Hai ${pusername},</h1>
     <p>Selamat, kamu telah berhasil mengirim email menggunakan Mailjet!</p>`
 
   const request = mailjet
@@ -47,11 +47,11 @@ function sendEmail() {
         "Messages": [{
             "From": {
                 "Email": "calvinharsono07@gmail.com",
-                "Name": "Rajinkoding"
+                "Name": "Calvin"
             },
             "To": [{
                 "Email": pemail, 
-                "Name": req.body.name    
+                "Name": pusername    
             }],
             "Subject": "Selamat, email kamu berhasil terkirim",
             "HTMLPart": contentEmail
@@ -59,16 +59,18 @@ function sendEmail() {
     })
   request
     .then((result) => {
-        res.send({
-            status: result.response.status,
-            result: result.body
-        });
+        // res.send({
+        //     status: result.response.status,
+        //     result: result.body
+        // });
+        return "sukses"
     })
     .catch((err) => {
-        res.send({
-            status: err.statusCode,
-            massage: err.message
-        });
+        // res.send({
+        //     status: err.statusCode,
+        //     massage: err.message
+        // });
+        return "error"
     })
 }
 
@@ -203,6 +205,7 @@ module.exports = {
             waktumulai: keTime(start),
             waktuselesai: keTime(end)
           })
+          sendEmail(user1.email, user1.username)
           const result = {
             "message" : "Schedule Added",
             "schedule_id" : schedule.id,

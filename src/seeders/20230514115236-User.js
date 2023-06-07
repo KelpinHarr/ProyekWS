@@ -26,7 +26,7 @@ module.exports = {
       updatedAt: '2023-05-20 05:53:30'
     }, {
       display_name: 'Jessica Susanto',
-      email: 'jees@gmail.com',
+      email: 'jessica.susanto16@gmail.com',
       username: 'jees',
       password: 'jees123',
       birthdate: '2003-08-16',
