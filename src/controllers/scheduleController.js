@@ -73,7 +73,31 @@ function sendEmail(pemail, pusername) {
         return "error"
     })
 }
+function keDatetime(tanggal,waktu) {
+  const format = 'HH:mm'; // Format waktu yang diharapkan
+  const time = moment(waktu, format);
+  const tanggalBaru = tanggalToString(tanggal);
+  const dateTime = new Date(`${tanggal}T${time}:00`);
+  return dateTime;
+}
+function isTabrakan(tanggal,awal1,akhir1,awal2,akhir2) {
 
+  const start1 = keDatetime(tanggal,awal1);
+  const end1 = keDatetime(tanggal,akhir1);
+  const start2 = keDatetime(tanggal,awal2);
+  const end2 = keDatetime(tanggal,akhir2);
+
+  // Pengecekan rentang waktu
+  if (start1 <= start2 && start2 < end1) {
+    return true; // Rentang waktu 2 dimulai di antara rentang waktu 1
+  }
+
+  if (start2 <= start1 && start1 < end2) {
+    return true; // Rentang waktu 1 dimulai di antara rentang waktu 2
+  }
+
+  return false; // Tidak ada tabrakan rentang waktu
+}
 //====================================
 module.exports = {
   cekToken : async function (req, res, next){
