@@ -17,7 +17,7 @@ function keDate(dateString) {
   const [day, month, year] = dateString.split('/');
 
   // Membuat objek Date dengan jam 00:00
-  const dateTime = new Date(`${year}-${month}-${day}T00:00:01`);
+  const dateTime = new Date(`${year}-${month}-${day}T11:00:00`);
 
   return dateTime;
 }
@@ -75,9 +75,15 @@ function sendEmail(pemail, pusername) {
 }
 function keDatetime(tanggal,waktu) {
   const format = 'HH:mm'; // Format waktu yang diharapkan
+  // console.log(tanggal);
   const time = moment(waktu, format);
+  //tanggal masih dalam datetime
   const tanggalBaru = tanggalToString(tanggal);
-  const dateTime = new Date(`${tanggal}T${time}:00`);
+  //tanggal baru=tanggal biasa
+  // console.log(tanggalBaru);
+  // console.log(`ini tanggalnya ${tanggalBaru} adasisdasidashd ${time}:00`);
+  const dateTime = new Date(`${tanggalBaru} ${waktu}:00`);
+  // console.log(dateTime);
   return dateTime;
 }
 function isTabrakan(tanggal,awal1,akhir1,awal2,akhir2) {
@@ -86,6 +92,24 @@ function isTabrakan(tanggal,awal1,akhir1,awal2,akhir2) {
   const end1 = keDatetime(tanggal,akhir1);
   const start2 = keDatetime(tanggal,awal2);
   const end2 = keDatetime(tanggal,akhir2);
+
+  // Pengecekan rentang waktu
+  if (start1 <= start2 && start2 < end1) {
+    return true; // Rentang waktu 2 dimulai di antara rentang waktu 1
+  }
+
+  if (start2 <= start1 && start1 < end2) {
+    return true; // Rentang waktu 1 dimulai di antara rentang waktu 2
+  }
+
+  return false; // Tidak ada tabrakan rentang waktu
+}
+function isTabrakan2(awal1,akhir1,awal2,akhir2) {
+
+  const start1 = awal1;
+  const end1 = akhir1;
+  const start2 = awal2;
+  const end2 = akhir2;
 
   // Pengecekan rentang waktu
   if (start1 <= start2 && start2 < end1) {
@@ -457,6 +481,126 @@ module.exports = {
           "message" : "Invalid User"
         }
         return res.status(400).json(result);
+      }
+    }
+  },
+  getAlternativeSchedule : async function(req, res){
+    // console.log("masuk")
+    const { username,date,start_time,end_time  } = req.body;
+    userLogin = req.user.id;
+    user1 = await db.User.findByPk(userLogin);
+    user1 = user1.dataValues;
+    // tes()
+    // console.log('masuk')
+    // console.log(keDate(date))
+    // console.log(tanggalToString(keDate(date)))
+    // console.log(keDatetime(keDate(date),'00:00'));
+    
+    if (!username||!date||!start_time||!end_time){
+      const result = {
+        "message" : "Field can't be empty!"
+      }
+      res.status(400).json(result);
+    }
+    else {
+      const cariUser = await db.User.findAll({
+        where: {
+          username: username
+        }
+      })
+      if(cariUser.length==0){
+        const result = {
+          "message" : "User not found"
+        }
+        res.status(404).json(result);
+      }
+      else if(cariUser[0].id==user1.id){
+        const result = {
+          "message" : "Invalid User"
+        }
+        res.status(400).json(result);
+      }
+      else {
+        let meeting = await db.sequelize.query(
+          `SELECT m.id AS 'mid', m.tanggal AS 'tanggal', m.waktumulai AS 'waktumulai', m.waktuselesai AS 'waktuselesai' 
+          FROM meetings m 
+          RIGHT OUTER JOIN 
+          (
+          SELECT ug.GroupId AS "gid"
+          FROM usergroups ug
+          WHERE ug.UserId = '${user1.id}' OR ug.UserId='${cariUser[0].id}'
+          GROUP BY ug.GroupId
+          )sq1
+          ON m.GroupId = sq1.gid
+          GROUP BY m.id
+          `,
+          {
+              type: Sequelize.QueryTypes.SELECT
+          }
+        )
+        let schedule = await db.sequelize.query(
+          `SELECT s.tanggal AS 'tanggal', s.waktumulai AS 'waktumulai', s.waktuselesai AS 'waktuselesai' 
+          FROM
+          schedules s
+          WHERE s.UserId1 = '${user1.id}' OR s.UserId2 = '${user1.id}' OR s.UserId1 = '${cariUser[0].id}' OR s.UserId2 = '${cariUser[0].id}'
+          GROUP BY s.id`,
+          {
+              type: Sequelize.QueryTypes.SELECT
+          }
+        )
+        let avail=false;
+
+        let tempstime=keDatetime(keDate(date),start_time);
+        let tempeetime=keDatetime(keDate(date),end_time);
+        // console.log(keDate(date))
+        // console.log(start_time)
+        // console.log(keDatetime(keDate(date),'14:00'));
+        while(!avail){
+          console.log(tempstime)
+          console.log(tempeetime)
+          let meetingPassed = true;
+          let schedulePassed = true;
+          for (let i = 0; i < meeting.length; i++) {
+            let tempsmeeting=keDatetime(meeting[i].tanggal,meeting[i].waktumulai);
+            let tempemeeting=keDatetime(meeting[i].tanggal,meeting[i].waktuselesai);
+            console.log(tempsmeeting)
+            console.log(tempemeeting)
+            if(isTabrakan2(tempstime,tempeetime,tempsmeeting,tempemeeting)){
+              meetingPassed=false;
+              console.log(`tabrakan sama meeting ${tempsmeeting} dan ${tempemeeting}`)
+              break;
+            }
+          }
+
+          if(meetingPassed==true){
+            for (let i = 0; i < schedule.length; i++) {
+              // console.log(schedule[i].tanggal)
+              let tempsschedule=keDatetime(schedule[i].tanggal,schedule[i].waktumulai);
+              let tempeeschedule=keDatetime(schedule[i].tanggal,schedule[i].waktuselesai);
+              if(isTabrakan2(tempstime,tempeetime,tempsschedule,tempeeschedule)){
+                schedulePassed=false;
+                console.log(`tabrakan ${tempstime} dan ${tempeetime}sama schedule ${tempsschedule} dan ${tempeeschedule}`)
+                break;
+              }
+            }
+          }
+          if(meetingPassed==true && schedulePassed==true){
+            avail=true;
+            // break;
+          }
+          else{
+            tempstime=moment(tempstime).add(15, 'm').toDate();
+            tempeetime=moment(tempeetime).add(15, 'm').toDate();
+          }
+        }
+        const result = {
+          "message" : "Alternative meeting",
+          "Suggestion" : {
+            "waktumulai" : new Date(tempstime).toString(),
+            "waktuselesai" : new Date(tempeetime).toString()
+          }
+        }
+        res.status(200).json(result);
       }
     }
   },
