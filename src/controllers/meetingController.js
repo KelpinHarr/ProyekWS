@@ -102,13 +102,13 @@ module.exports = {
     }
   },
   addMeeting : async function(req, res){
-    const { group_id, date, time } = req.body;
+    const { group_id, date, start_time,end_time } = req.body;
     userLogin = req.user.id;
     user1 = await db.User.findByPk(userLogin);
     user1 = user1.dataValues;
     console.log(keDate(date))
            
-    if (!group_id || !date || !time){
+    if (!group_id || !date || !start_time|| !end_time){
       const result = {
         "message" : "Field can't be empty!"
       }
@@ -129,79 +129,87 @@ module.exports = {
       }
       else {
       //cek ada schedule atau meeting user yang sama dengan meeting yang ingin dibuat
-        const cariSchedule = await db.Schedule.findAll({
-          where: {
-            [Op.or]: [
-              {
-                UserId1: user1.id,
-                tanggal: keDate(date),
-                waktu: time,
-                status: {
-                  [Op.notLike]: 'cancelled'
-                }
-              },
-              {
-                UserId2: user1.id,
-                tanggal: keDate(date),
-                waktu: time,
-                status: {
-                  [Op.notLike]: 'cancelled'
-                }
-              },
-            ]
-          }
-        });
-        var adaTabrakan=false;
-        //dapatkan semua user dalam group
-        const cariUser = await db.UserGroup.findAll({
-          where: {
-            GroupId: group_id
-          }
-        });
-        //cek apakah ada user yang memiliki schedule atau meeting yang sama dengan meeting yang ingin dibuat
-        for (let i = 0; i < cariUser.length; i++) {
-          const cariSchedule2 = await db.Schedule.findAll({
-            where: {
-              [Op.or]: [
-                {
-                  UserId1: cariUser[i].UserId,
-                  tanggal: keDate(date),
-                  waktu: time
-                },
-                {
-                  UserId2: cariUser[i].UserId,
-                  tanggal: keDate(date),
-                  waktu: time
-                },
-              ]
-            }
-          });
+      let meeting = await db.sequelize.query(
+        `SELECT m.id AS 'mid', m.tanggal AS 'tanggal', m.waktumulai AS 'waktumulai', m.waktuselesai AS 'waktuselesai' 
+        FROM meetings m 
+        RIGHT OUTER JOIN 
+        (SELECT ug.id,ug.GroupId AS 'gid'
+        FROM
+        usergroups ug 
+        RIGHT OUTER JOIN
+        (
+        SELECT u.id AS "uid"
+        FROM users u RIGHT OUTER JOIN usergroups ug ON ug.UserId = u.id
+        WHERE ug.GroupId = '${group_id}'
+        )sq1
+        ON sq1.uid = ug.UserId
+        GROUP BY ug.GroupId) sq2
+        ON m.GroupId = sq2.gid
+        GROUP BY m.id`,
+        {
+            type: Sequelize.QueryTypes.SELECT
+        }
+      )
+      let schedule = await db.sequelize.query(
+        `SELECT s.tanggal AS 'tanggal', s.waktumulai AS 'waktumulai', s.waktuselesai AS 'waktuselesai' 
+        FROM
+        schedules s,
+        (
+        SELECT u.id AS "uid"
+        FROM users u RIGHT OUTER JOIN usergroups ug ON ug.UserId = u.id
+        WHERE ug.GroupId = '${group_id}'
+        )sq1
+        WHERE sq1.uid = s.UserId1
+        GROUP BY s.id
+        UNION
+        SELECT s.tanggal AS 'tanggal', s.waktumulai AS 'waktumulai', s.waktuselesai AS 'waktuselesai' 
+        FROM
+        schedules s,
+        (
+        SELECT u.id AS "uid"
+        FROM users u RIGHT OUTER JOIN usergroups ug ON ug.UserId = u.id
+        WHERE ug.GroupId = '${group_id}'
+        )sq3
+        WHERE sq3.uid = s.UserId2
+        GROUP BY s.id`,
+        {
+            type: Sequelize.QueryTypes.SELECT
+        }
+      )
+      let avail=false;
 
-          const cariGroup = await db.UserGroup.findAll({
-            where: {
-              UserId: cariUser[i].UserId
-            }
-          })
-          var adaMeeting=false;
-          for (let i = 0; i < cariGroup.length; i++) {
-            const cariMeeting = await db.Meeting.findAll({
-              where: {
-                GroupId: cariGroup[i].GroupId,
-                tanggal: keDate(date),
-                waktu: time
-              }
-            })
-            if(cariMeeting.length>0){
-              adaMeeting=true;
-            }
-          }
-
-          if (cariSchedule2.length > 0 || adaMeeting){
-            adaTabrakan=true;
+      let tempstime=keDatetime(keDate(date),start_time);
+      let tempeetime=keDatetime(keDate(date),end_time);
+      // console.log(keDate(date))
+      // console.log(start_time)
+      // console.log(keDatetime(keDate(date),'14:00'));
+      let meetingPassed = true;
+        let schedulePassed = true;
+        for (let i = 0; i < meeting.length; i++) {
+          let tempsmeeting=keDatetime(meeting[i].tanggal,meeting[i].waktumulai);
+          let tempemeeting=keDatetime(meeting[i].tanggal,meeting[i].waktuselesai);
+          console.log(tempsmeeting)
+          console.log(tempemeeting)
+          if(isTabrakan2(tempstime,tempeetime,tempsmeeting,tempemeeting)){
+            meetingPassed=false;
+            console.log(`tabrakan sama meeting ${tempsmeeting} dan ${tempemeeting}`)
+            break;
           }
         }
-        
-        if(adaTabrakan==true){
+
+        if(meetingPassed==true){
+          for (let i = 0; i < schedule.length; i++) {
+            // console.log(schedule[i].tanggal)
+            let tempsschedule=keDatetime(schedule[i].tanggal,schedule[i].waktumulai);
+            let tempeeschedule=keDatetime(schedule[i].tanggal,schedule[i].waktuselesai);
+            if(isTabrakan2(tempstime,tempeetime,tempsschedule,tempeeschedule)){
+              schedulePassed=false;
+              console.log(`tabrakan ${tempstime} dan ${tempeetime}sama schedule ${tempsschedule} dan ${tempeeschedule}`)
+              break;
+            }
+          }
+        }
+        if(meetingPassed==false || schedulePassed==false){
           const result = {
             "message" : "There is a schedule or meeting at the same time"
           }
@@ -211,7 +219,8 @@ module.exports = {
           const createMeeting = await db.Meeting.create({
             GroupId: group_id,
             tanggal: keDate(date),
-            waktu: time,
+            waktumulai: start_time,
+            waktuselesai: end_time,
             UserId: user1.id,
             status: "valid"
           })
@@ -220,6 +229,7 @@ module.exports = {
           }
           res.status(200).json(result);
         }
+        
       }
       
     }
