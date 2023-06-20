@@ -23,8 +23,8 @@ module.exports = {
       name : 'Keren Abiezzz ',
       description : 'nak nak kerenss',
       groupCode : 'casr5d',
-      createdAt : '2023-05-23 18:24:20',
-      updatedAt : '2023-05-23 18:24:20'
+      createdAt : '2023-05-23 18:24:23',
+      updatedAt : '2023-05-23 18:24:23'
     }, {
       name : 'Macam Tak Betuls ',
       description : 'TAHU FAMILY Grouppp!',
@@ -32,17 +32,17 @@ module.exports = {
       createdAt : '2023-06-01 09:14:50',
       updatedAt : '2023-06-01 09:14:50'
     }, {
-      name : 'NUTTELLA_TIRAMISSU ',
+      name : 'NUTTELLA_TIRAMISSU',
       description : 'NUTTELLA_TIRAMISSU ENAK BANGET LO',
       groupCode : 'tes5cz',
       createdAt : '2023-06-05 12:31:11',
       updatedAt : '2023-06-05 12:31:11'
     }, {
-      name : 'NUTTELLA_TIRAMISSU ',
-      description : 'NUTTELLA_TIRAMISSU ENAK BANGET LO',
-      groupCode : 'tes5cz',
-      createdAt : '2023-06-05 12:31:11',
-      updatedAt : '2023-06-05 12:31:11'
+      name : 'papasiapasi',
+      description : 'kelub papasiapasi',
+      groupCode : 'wren30',
+      createdAt : '2023-06-10 19:01:52',
+      updatedAt : '2023-06-10 19:01:52'
     }]);
   },
 
@@ -53,5 +53,7 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
+
+    return queryInterface.bulkDelete('Groups', null, {});
   }
 };
