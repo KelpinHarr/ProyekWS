@@ -560,27 +560,31 @@ module.exports = {
           console.log(tempeetime)
           let meetingPassed = true;
           let schedulePassed = true;
-          for (let i = 0; i < meeting.length; i++) {
-            let tempsmeeting=keDatetime(meeting[i].tanggal,meeting[i].waktumulai);
-            let tempemeeting=keDatetime(meeting[i].tanggal,meeting[i].waktuselesai);
-            console.log(tempsmeeting)
-            console.log(tempemeeting)
-            if(isTabrakan2(tempstime,tempeetime,tempsmeeting,tempemeeting)){
-              meetingPassed=false;
-              console.log(`tabrakan sama meeting ${tempsmeeting} dan ${tempemeeting}`)
-              break;
+          if(meeting.length>0){
+            for (let i = 0; i < meeting.length; i++) {
+              let tempsmeeting=keDatetime(meeting[i].tanggal,meeting[i].waktumulai);
+              let tempemeeting=keDatetime(meeting[i].tanggal,meeting[i].waktuselesai);
+              console.log(tempsmeeting)
+              console.log(tempemeeting)
+              if(isTabrakan2(tempstime,tempeetime,tempsmeeting,tempemeeting)){
+                meetingPassed=false;
+                console.log(`tabrakan sama meeting ${tempsmeeting} dan ${tempemeeting}`)
+                break;
+              }
             }
           }
 
           if(meetingPassed==true){
-            for (let i = 0; i < schedule.length; i++) {
-              // console.log(schedule[i].tanggal)
-              let tempsschedule=keDatetime(schedule[i].tanggal,schedule[i].waktumulai);
-              let tempeeschedule=keDatetime(schedule[i].tanggal,schedule[i].waktuselesai);
-              if(isTabrakan2(tempstime,tempeetime,tempsschedule,tempeeschedule)){
-                schedulePassed=false;
-                console.log(`tabrakan ${tempstime} dan ${tempeetime}sama schedule ${tempsschedule} dan ${tempeeschedule}`)
-                break;
+            if(schedule.length>0){
+              for (let i = 0; i < schedule.length; i++) {
+                // console.log(schedule[i].tanggal)
+                let tempsschedule=keDatetime(schedule[i].tanggal,schedule[i].waktumulai);
+                let tempeeschedule=keDatetime(schedule[i].tanggal,schedule[i].waktuselesai);
+                if(isTabrakan2(tempstime,tempeetime,tempsschedule,tempeeschedule)){
+                  schedulePassed=false;
+                  console.log(`tabrakan ${tempstime} dan ${tempeetime}sama schedule ${tempsschedule} dan ${tempeeschedule}`)
+                  break;
+                }
               }
             }
           }
