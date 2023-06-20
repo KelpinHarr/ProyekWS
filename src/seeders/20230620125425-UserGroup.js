@@ -49,6 +49,24 @@ module.exports = {
       status : 'joined',
       createdAt : '2023-05-23 19:25:45',
       updatedAt : '2023-05-23 19:25:45'
+    }, {
+      GroupId : 3,
+      UserId : 2,
+      status : 'joined',
+      createdAt : '2023-06-01 09:14:50',
+      updatedAt : '2023-06-01 09:14:50'
+    }, {
+      GroupId : 4,
+      UserId : 3,
+      status : 'joined',
+      createdAt : '2023-06-05 12:31:11',
+      updatedAt : '2023-06-05 12:31:11'
+    }, {
+      GroupId : 5,
+      UserId : 4,
+      status : 'joined',
+      createdAt : '2023-06-10 19:01:52',
+      updatedAt : '2023-06-10 19:01:52'
     }])
   },
 
