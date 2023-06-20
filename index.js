@@ -29,3 +29,9 @@ app.listen(port, function () {
 //npx sequelize-cli model:generate --name GroupMeeting --attributes GroupId:integer,MeetingId:integer,notes:string
 
 //npx sequelize-cli db:seed:all
+
+// npx sequelize-cli seed:generate --name Group
+// npx sequelize-cli seed:generate --name GroupMeeting
+// npx sequelize-cli seed:generate --name Meeting
+// npx sequelize-cli seed:generate --name Schedule
+// npx sequelize-cli seed:generate --name UserGroup
