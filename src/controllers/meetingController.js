@@ -532,4 +532,55 @@ module.exports = {
       }
     }
   },
+addMeetingNote: async function(req, res) {
+  const { groupid, meetingid, notes } = req.body;
+
+  try {
+    const group = await db.Group.findOne({ where: { id: groupid } });
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    const meeting = await db.Meeting.findOne({ where: { id: meetingid, groupid } });
+    if (!meeting) {
+      return res.status(404).json({ message: "Meeting not found" });
+    }
+
+    const note = await db.GroupMeeting.create({
+      GroupId: groupid,
+      MeetingId: meetingid,
+      notes,
+    });
+
+    res.status(200).json({
+      note_id: note.id,
+      notes: note.notes
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: "Failed to add meeting note" });
+  }
+},
+getMeetingNote: async function(req, res) {
+  const { note_id } = req.query;
+
+  try {
+    let meetingNotes;
+    if (note_id) {
+      meetingNotes = await db.GroupMeeting.findOne({ where: { id: note_id } });
+    } else {
+      meetingNotes = await db.GroupMeeting.findAll();
+    }
+
+    if (!meetingNotes) {
+      return res.status(404).json({ message: "Meeting note not found" });
+    }
+
+    res.status(200).json(meetingNotes);
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: "Failed to retrieve meeting note" });
+  }
+},
+
 };

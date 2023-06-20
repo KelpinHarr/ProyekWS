@@ -6,5 +6,8 @@ router.post("/addMeeting",meetingController.cekToken, meetingController.addMeeti
 router.put("/deleteMeeting",meetingController.cekToken, meetingController.deleteMeeting);
 router.get("/getMeetingDetail",meetingController.cekToken, meetingController.getMeetingDetail);
 router.get("/getAlternativeMeeting",meetingController.cekToken, meetingController.getAlternativeMeeting);
+router.post("/addMeetingNote", meetingController.cekToken, meetingController.addMeetingNote);
+router.get("/getMeetingNote", meetingController.cekToken, meetingController.getMeetingNote);
+
 
 module.exports = router;

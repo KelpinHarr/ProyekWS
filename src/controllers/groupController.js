@@ -184,5 +184,193 @@ module.exports = {
       description : cariGroup.description,
       members : cariJumlahMember.count
     })
-  }
+  },
+  inviteGroup: async function (req, res) {
+    const { groupCode, user_id } = req.body;
+  
+    if (!groupCode || !user_id) {
+      return res.status(400).send({
+        message: "Group code and invited user ID cannot be empty",
+      });
+    }
+  
+    const inviterId = req.user.id;
+  
+    try {
+      const group = await db.Group.findOne({
+        where: {
+          groupCode: groupCode,
+        },
+      });
+  
+      if (!group) {
+        return res.status(404).send({
+          message: "Group not found",
+        });
+      }
+  
+      const inviter = await db.User.findByPk(inviterId);
+      const invitedUser = await db.User.findByPk(user_id);
+  
+      if (!inviter || !invitedUser) {
+        return res.status(404).send({
+          message: "User not found",
+        });
+      }
+  
+      const inviterGroupMember = await db.UserGroup.findOne({
+        where: {
+          GroupId: group.id,
+          UserId: inviterId,
+          status: "joined",
+        },
+      });
+  
+      if (!inviterGroupMember) {
+        return res.status(400).send({
+          message: "You are not a member of this group",
+        });
+      }
+  
+      const invitedGroupMember = await db.UserGroup.findOne({
+        where: {
+          GroupId: group.id,
+          UserId: user_id,
+          status: "joined",
+        },
+      });
+
+      if (invitedGroupMember.status=="joined") {
+        return res.status(400).send({
+          message: "User is already a member of this group",
+        });
+      }
+  
+      await db.UserGroup.create({
+        GroupId: group.id,
+        UserId: user_id,
+        status: "joined",
+      });
+  
+      return res.status(200).send({
+        inviter: inviter.display_name,
+        invitedUser: invitedUser.display_name,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({
+        message: "Internal server error",
+      });
+    }
+  },
+  removeFromGroup: async function (req, res) {
+    const { user_id, groupCode } = req.body;
+  
+    if (!user_id) {
+      return res.status(400).send({
+        message: "User ID cannot be empty",
+      });
+    }
+  
+    const removerId = req.user.id;
+  
+    try {
+      const remover = await db.User.findByPk(removerId);
+      const removedUser = await db.User.findByPk(user_id);
+  
+      if (!remover || !removedUser) {
+        return res.status(404).send({
+          message: "User not found",
+        });
+      }
+  
+      if (removerId === user_id) {
+        return res.status(400).send({
+          message: "You cannot remove yourself from the group",
+        });
+      }
+  
+      const removerGroupMember = await db.UserGroup.findOne({
+        where: {
+          UserId: removerId,
+          status: "joined",
+        },
+      });
+  
+      if (!removerGroupMember) {
+        return res.status(400).send({
+          message: "You are not a member of any group",
+        });
+      }
+  
+      let removedGroupMember;
+      let group;
+  
+      if (groupCode) {
+        group = await db.Group.findOne({
+          where: {
+            groupCode: groupCode,
+          },
+        });
+  
+        if (!group) {
+          return res.status(404).send({
+            message: "Group not found",
+          });
+        }
+  
+        removedGroupMember = await db.UserGroup.findOne({
+          where: {
+            UserId: user_id,
+            GroupId: group.id,
+            status: "joined",
+          },
+        });
+  
+        if (!removedGroupMember) {
+          return res.status(400).send({
+            message: "User is not a member of the specified group",
+          });
+        }
+      } else {
+        removedGroupMember = await db.UserGroup.findOne({
+          where: {
+            UserId: user_id,
+            status: "joined",
+          },
+        });
+  
+        if (!removedGroupMember) {
+          return res.status(400).send({
+            message: "User is not a member of any group",
+          });
+        }
+  
+        group = await db.Group.findByPk(removedGroupMember.GroupId);
+  
+        if (!group) {
+          return res.status(404).send({
+            message: "Group not found",
+          });
+        }
+      }
+  
+      await db.UserGroup.destroy({
+        where: {
+          UserId: user_id,
+          GroupId: group.id,
+        },
+      });
+  
+      return res.status(200).send({
+        remover: remover.display_name,
+        removedUser: removedUser.display_name,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({
+        message: "Internal server error",
+      });
+    }
+  },  
 };

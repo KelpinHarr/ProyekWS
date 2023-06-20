@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "25865c50-d544-4a80-93b0-3b29e8cfaf50",
+		"_postman_id": "a56d59df-4d9e-446a-8c03-2c0dc752b899",
 		"name": "proyek-ws",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25904771"
 	},
 	"item": [
 		{
@@ -283,12 +284,214 @@
 					"name": "join",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": ""
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "get group by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "inviteGroup",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywidXNlcm5hbWUiOiJkaW9uIiwiaWF0IjoxNjg3MjYxNjI3LCJleHAiOjE2ODczNDgwMjd9.8uK0z5rLKpTWBhK3-QWuGboE1C49Og94KTRlbHBmHkk",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "groupCode",
+									"value": "y6oye5",
+									"type": "text"
+								},
+								{
+									"key": "user_id",
+									"value": "2",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "localhost:3000/api/groups/inviteGroup",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"groups",
+								"inviteGroup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJqZWVzIiwiaWF0IjoxNjg3MTk2MDgyLCJleHAiOjE2ODcyODI0ODJ9.9M5sO_qAxyE-cHh130FH7W0Zix0ndieB0TclQzzxkiQ",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "user_id",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "groupCode",
+									"value": "y6oye5",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "localhost:3000/api/groups/removeFromGroup",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"groups",
+								"removeFromGroup"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Meeting",
+			"item": [
+				{
+					"name": "addMeeting",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/addMeeting",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"addMeeting"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddNote",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJqZWVzIiwiaWF0IjoxNjg3MTk2MDgyLCJleHAiOjE2ODcyODI0ODJ9.9M5sO_qAxyE-cHh130FH7W0Zix0ndieB0TclQzzxkiQ",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "notes",
+									"value": "ini adalah notes yang ditambahkan",
+									"type": "text"
+								},
+								{
+									"key": "groupid",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "meetingid",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "localhost:3000/api/meetings/addMeetingNote",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"meetings",
+								"addMeetingNote"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getmeetnote",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJqZWVzIiwiaWF0IjoxNjg3MTk2MDgyLCJleHAiOjE2ODcyODI0ODJ9.9M5sO_qAxyE-cHh130FH7W0Zix0ndieB0TclQzzxkiQ",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "localhost:3000/api/meetings/getMeetingNote?note_id=1",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"meetings",
+								"getMeetingNote"
+							],
+							"query": [
+								{
+									"key": "note_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Schedule",
+			"item": [
+				{
+					"name": "add",
 					"request": {
 						"method": "GET",
 						"header": []
