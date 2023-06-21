@@ -37,9 +37,9 @@ module.exports = {
       updatedAt: '2023-05-23 10:05:30'
     }, {
       display_name: 'Calvin Harsono',
-      email: 'calvinHarsono@gmail.com',
-      username: 'calpinnn',
-      password: 'kelpin',
+      email: 'calvinharsono07@gmail.com',
+      username: 'calvinharsono',
+      password: '555',
       birthdate: '2003-01-23',
       saldo: 30000,
       api_hit: 13,
