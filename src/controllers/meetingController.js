@@ -205,7 +205,7 @@ module.exports = {
           if(schedule.length>0){
             for (let i = 0; i < schedule.length; i++) {
               if(schedule[i].tanggal!=null && schedule[i].waktumulai!=null && schedule[i].waktuselesai!=null){
-                // console.log(schedule[i].tanggal)
+                // console.log(schedu le[i].tanggal)
                 let tempsschedule=keDatetime(schedule[i].tanggal,schedule[i].waktumulai);
                 let tempeeschedule=keDatetime(schedule[i].tanggal,schedule[i].waktuselesai);
                 if(isTabrakan2(tempstime,tempeetime,tempsschedule,tempeeschedule)){
@@ -567,20 +567,27 @@ getMeetingNote: async function(req, res) {
   try {
     let meetingNotes;
     if (note_id) {
-      meetingNotes = await db.GroupMeeting.findOne({ where: { id: note_id } });
+      meetingNotes = await db.GroupMeeting.findAll({ where: { MeetingId: note_id } });
     } else {
       meetingNotes = await db.GroupMeeting.findAll();
     }
 
-    if (!meetingNotes) {
+    const count = meetingNotes.length;
+
+    if (count === 0) {
       return res.status(404).json({ message: "Meeting note not found" });
     }
 
-    res.status(200).json(meetingNotes);
+    res.status(200).json({
+      count: count,
+      meetingNotes: meetingNotes
+    });
   } catch (error) {
     console.log(error);
     res.status(400).json({ message: "Failed to retrieve meeting note" });
   }
 },
+
+
 
 };

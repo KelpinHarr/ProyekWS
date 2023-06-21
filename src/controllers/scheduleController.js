@@ -419,7 +419,7 @@ module.exports = {
     else {
       if(user1.id == cariSchedule[0].UserId2){
         const updateStatus = await db.Schedule.update({
-          status: req.body.status
+          status: "Approved"
         },{
           where: {
             id: req.body.id_schedule
